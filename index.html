@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBank PR - Sistema Escolar Integrado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --seed-blue: #0284c7;
+            --success: #16a34a;
+            --danger: #ef4444;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+            --pix-color: #32bcad;
+            --warning: #f59e0b;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- HEADER COM BOTÕES DE AÇÃO --- */
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            position: relative;
+            transition: background 0.2s;
+        }
+        .icon-btn:hover { background: #e2e8f0; }
+        .badge-count {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        h2 {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        /* --- PERFIL DO USUÁRIO --- */
+        .profile-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--seed-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .profile-info h4 { font-size: 1.1rem; color: var(--primary); }
+        .profile-info p { font-size: 0.85rem; color: #64748b; }
+
+        /* --- FORMULÁRIOS --- */
+        .form-group { margin-bottom: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%; padding: 10px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 1rem; background: #fff;
+        }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--seed-blue); }
+
+        button {
+            width: 100%; padding: 12px; background-color: var(--seed-blue);
+            color: white; border: none; border-radius: 6px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; transition: opacity 0.2s; margin-top: 5px;
+        }
+        button:hover { opacity: 0.9; }
+        button.logout-btn { background-color: #64748b; margin-top: 25px; }
+        button.btn-danger { background-color: var(--danger); }
+        button.pix-btn { background-color: var(--pix-color); margin-top: 10px; }
+        button.btn-secondary { background: #cbd5e1; color: var(--primary); }
+
+        /* --- CARDS DE BANCO --- */
+        .balance-card {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white; padding: 25px; border-radius: 10px; text-align: center; margin-bottom: 20px;
+        }
+        .balance-amount { font-size: 2.8rem; font-weight: bold; margin-top: 5px; color: #38bdf8; }
+
+        /* --- LISTAS --- */
+        .items-list {
+            list-style: none; max-height: 200px; overflow-y: auto;
+            border: 1px solid var(--border); border-radius: 6px; margin-bottom: 15px;
+        }
+        .list-item {
+            padding: 12px; border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center;
+        }
+        .list-item:last-child { border-bottom: none; }
+
+        /* --- CONTATOS SALVOS PIX --- */
+        .contacts-container {
+            display: flex; gap: 8px; overflow-x: auto; padding: 5px 0 12px;
+        }
+        .contact-bubble {
+            background: #e2e8f0; padding: 6px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+            transition: background 0.2s; border: 1px solid #cbd5e1;
+        }
+        .contact-bubble:hover { background: #cbd5e1; }
+
+        /* --- MODAIS / SEÇÕES EXTRA --- */
+        .sub-screen {
+            background: #f8fafc; border: 1px solid var(--border);
+            padding: 20px; border-radius: 10px; margin-top: 20px; margin-bottom: 20px;
+        }
+
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; }
+        .badge-admin { background: #db2777; }
+        .badge-prof { background: #8b5cf6; }
+        .badge-aluno { background: #06b6d4; }
+
+        .hint { font-size: 0.8rem; color: #64748b; text-align: center; margin-top: 15px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TELA DE LOGIN INSTITUCIONAL -->
+    <div id="login-screen" class="container">
+        <h2>✨ Conectar ao EduBank PR</h2>
+        <p style="text-align: center; font-size: 0.9rem; margin-bottom: 20px; color:#64748b;">Use suas credenciais @escola.pr.gov.br</p>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">E-mail Institucional</label>
+                <input type="email" id="email" required placeholder="exemplo@escola.pr.gov.br">
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" required placeholder="Sua senha">
+            </div>
+            <button type="submit">Entrar com Login Único</button>
+        </form>
+        
+        <div class="hint">
+            <strong>🔑 Contas de Teste Liberadas:</strong><br>
+            • <b>👑 Super Admin:</b> <code>joao.paulo.lima23@escola.pr.gov.br</code> (senha: <code>admin123</code>)<br>
+            • <b>Professor:</b> <code>carlos.silva@escola.pr.gov.br</code> (senha: <code>123</code>) <br>
+            • <b>Aluno 1:</b> <code>ana.oliveira@escola.pr.gov.br</code> (senha: <code>123</code>)<br>
+            • <b>Aluno 2:</b> <code>pedro.santos@escola.pr.gov.br</code> (senha: <code>123</code>)
+        </div>
+    </div>
+
+    <!-- 2. PAINEL SUPER ADMIN -->
+    <div id="admin-screen" class="container hidden">
+        <div class="panel-header">
+            <h2>⚙️ Painel Master</h2>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="toggleSection('admin-notifications')">🔔<span class="badge-count" id="admin-notif-count">0</span></button>
+                <button class="icon-btn" onclick="toggleSettingsSection()">⚙️</button>
+            </div>
+        </div>
+        
+        <div class="profile-box">
+            <img src="" class="profile-avatar hidden" id="admin-img">
+            <div class="profile-avatar" id="admin-avatar-txt">J</div>
+            <div class="profile-info">
+                <h4 id="admin-name">Joao Paulo Lima</h4>
+                <p id="admin-email">joao.paulo.lima23@escola.pr.gov.br</p>
+                <span class="badge badge-admin">Acesso Total 100%</span>
+            </div>
+        </div>
+
+        <div id="admin-notifications" class="sub-screen hidden">
+            <h3>🔔 Central de Notificações</h3>
+            <ul class="items-list" id="admin-notif-list"></ul>
+            <button class="btn-secondary" onclick="clearNotifs()">Limpar Notificações</button>
+        </div>
+
+        <div id="admin-settings-box" class="settings-box hidden"></div>
+
+        <h3>👥 Controle Geral de Contas do Colégio</h3>
+        <ul class="items-list" id="admin-users-list"></ul>
+
+        <form id="admin-add-user-form" style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+            <strong style="font-size: 0.9rem; display:block; margin-bottom: 10px;">➕ Cadastrar Servidor ou Aluno</strong>
+            <div class="form-group">
+                <input type="email" id="adm-new-email" required placeholder="E-mail (@escola.pr.gov.br)">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="password" id="adm-new-password" required placeholder="Senha de Acesso">
+                </div>
+                <div class="form-group">
+                    <select id="adm-new-role" required>
+                        <option value="student">Papel: Aluno</option>
+                        <option value="teacher">Papel: Professor</option>
+                        <option value="admin">Papel: Administrador</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" style="background: var(--success)">Inserir Usuário</button>
+        </form>
+
+        <h3>📜 Histórico Geral de Auditoria (Todas as Transações)</h3>
+        <ul class="items-list" id="admin-global-history"></ul>
+
+        <button class="logout-btn" onclick="logout()">Sair da Conta</button>
+    </div>
+
+    <!-- 3. PAINEL DO PROFESSOR -->
+    <div id="teacher-screen" class="container hidden">
+        <div class="panel-header">
+            <h2>👨‍🏫 Área Docente</h2>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="toggleSection('teacher-notifications')">🔔<span class="badge-count" id="teacher-notif-count">0</span></button>
+                <button class="icon-btn" onclick="toggleSettingsSection()">⚙️</button>
+            </div>
+        </div>
+        
+        <div class="profile-box">
+            <img src="" class="profile-avatar hidden" id="teacher-img">
+            <div class="profile-avatar" id="teacher-avatar-txt">P</div>
+            <div class="profile-info">
+                <h4 id="teacher-name">Nome Professor</h4>
+                <p id="teacher-email">email@escola.pr.gov.br</p>
+                <span class="badge badge-prof">Professor(a)</span>
+            </div>
+        </div>
+
+        <div id="teacher-notifications" class="sub-screen hidden">
+            <h3>🔔 Central de Notificações</h3>
+            <ul class="items-list" id="teacher-notif-list"></ul>
+            <button class="btn-secondary" onclick="clearNotifs()">Limpar Notificações</button>
+        </div>
+
+        <div id="teacher-settings-box" class="settings-box hidden"></div>
+        
+        <form id="transfer-form">
+            <h3>💸 Lançar e Bonificar Pontos</h3>
+            <div class="form-group">
+                <label for="select-student">Selecione o Aluno Destinatário:</label>
+                <select id="select-student" required></select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="points-amount">Pontuação:</label>
+                    <input type="number" id="points-amount" min="1" required placeholder="Ex: 25">
+                </div>
+                <div class="form-group">
+                    <label for="transfer-reason">Critério/Atividade:</label>
+                    <input type="text" id="transfer-reason" required placeholder="Ex: Nota da Prova">
+                </div>
+            </div>
+            <button type="submit" style="background: var(--success)">Efetuar Depósito</button>
+        </form>
+
+        <button class="logout-btn" onclick="logout()">Sair da Conta</button>
+    </div>
+
+    <!-- 4. PAINEL DO ALUNO -->
+    <div id="student-screen" class="container hidden">
+        <div class="panel-header">
+            <h2>🎒 Área do Aluno</h2>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="toggleSection('student-notifications')">🔔<span class="badge-count" id="student-notif-count">0</span></button>
+                <button class="icon-btn" onclick="toggleSettingsSection()">⚙️</button>
+            </div>
+        </div>
+        
+        <div class="profile-box">
+            <img src="" class="profile-avatar hidden" id="student-img">
+            <div class="profile-avatar" id="student-avatar-txt">A</div>
+            <div class="profile-info">
+                <h4 id="student-name">Nome Aluno</h4>
+                <p id="student-email">email@escola.pr.gov.br</p>
+                <span class="badge badge-aluno">Estudante</span>
+            </div>
+        </div>
+
+        <div id="student-notifications" class="sub-screen hidden">
+            <h3>🔔 Central de Notificações</h3>
+            <ul class="items-list" id="student-notif-list"></ul>
+            <button class="btn-secondary" onclick="clearNotifs()">Limpar Notificações</button>
+        </div>
+
+        <div id="student-settings-box" class="settings-box hidden"></div>
+
+        <div class="balance-card">
+            <div>Seu Saldo Disponível</div>
+            <div class="balance-amount" id="student-balance">0 pts</div>
+        </div>
+
+        <!-- COMPONENTE: PIX ENTRE ALUNOS -->
+        <form id="student-pix-form" style="background: #f0fdfa; padding: 15px; border-radius: 8px; border: 1px solid #99f6e4; margin-bottom: 20px;">
+            <strong style="color: #0d9488; font-size: 0.95rem; display:block; margin-bottom: 5px;">📱 Transferência via Pix Escolar</strong>
+            
+            <label style="color:#115e59; font-size:0.8rem;">Contatos Recentes:</label>
+            <div class="contacts-container" id="pix-saved-contacts">
+                <span class="contact-bubble" style="color:#64748b; background:#f1f5f9;">Nenhum e-mail salvo</span>
+            </div>
+
+            <div class="form-group">
+                <label for="pix-target-email" style="color: #115e59;">E-mail do Colega (Chave Pix):</label>
+                <input type="email" id="pix-target-email" required placeholder="colega@escola.pr.gov.br">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pix-amount" style="color: #115e59;">Quantidade:</label>
+                    <input type="number" id="pix-amount" min="1" required placeholder="Ex: 10">
+                </div>
+                <div class="form-group">
+                    <label for="pix-reason" style="color: #115e59;">Mensagem:</label>
+                    <input type="text" id="pix-reason" placeholder="Ex: Trabalho de Geografia">
+                </div>
+            </div>
+            <button type="submit" class="pix-btn">Enviar Pix ⚡</button>
+        </form>
+
+        <h3>📜 Extrato Técnico de Movimentações</h3>
+        <ul class="items-list" id="student-history-list"></ul>
+
+        <button class="logout-btn" onclick="logout()">Sair da Conta</button>
+    </div>
+
+    <!-- TEMPLATE HTML INJETADO VIA JAVASCRIPT -->
+    <div id="settings-template" class="hidden">
+        <div class="sub-screen" style="border: 2px solid var(--seed-blue);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                <h3 style="margin:0; border-bottom:none; padding:0;">⚙️ Configurações do Perfil</h3>
+            </div>
+            
+            <div style="background: #fff; padding: 12px; border-radius: 6px; border:1px solid var(--border); margin-bottom:15px;">
+                <label>🖼️ <b>Link da Foto de Perfil:</b></label>
+                <input type="url" id="settings-avatar-url" placeholder="https://linkdafoto.com/imagem.png" style="margin-top:5px; margin-bottom:10px;">
+                <button onclick="saveAvatar()" style="background:var(--success); padding:8px; font-size:0.9rem;">Salvar Foto</button>
+                <button onclick="removeAvatar()" class="btn-danger" style="padding:8px; font-size:0.9rem; margin-top:5px;">Remover Foto</button>
+            </div>
+
+            <div style="background: #fef3c7; padding: 12px; border-radius: 6px; border:1px solid var(--warning);">
+                <strong style="color:#b45309;">❓ Central de Ajuda Escolar</strong>
+                <div style="font-size:0.8rem; color:#78350f; margin-top:5px; line-height:1.4;">
+                    <p>• <b>Como ganho pontos?</b> Os professores distribuem através do painel docente deles.</p>
+                    <p style="margin-top:3px;">• <b>Pix travado?</b> Verifique se o e-mail do colega foi digitado corretamente com o final @escola.pr.gov.br.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultDatabase = {
+            "joao.paulo.lima23@escola.pr.gov.br": { role: "admin", pass: "admin123", avatar: "" },
+            "carlos.silva@escola.pr.gov.br": { role: "teacher", pass: "123", avatar: "" },
+            "ana.oliveira@escola.pr.gov.br": { role: "student", pass: "123", balance: 150, avatar: "" },
+            "pedro.santos@escola.pr.gov.br": { role: "student", pass: "123", balance: 80, avatar: "" }
+        };
+
+        if (!localStorage.getItem('edu_users')) {
+            localStorage.setItem('edu_users', JSON.stringify(defaultDatabase));
+            localStorage.setItem('edu_history', JSON.stringify([]));
+            localStorage.setItem('edu_notifications', JSON.stringify([]));
+            localStorage.setItem('edu_contacts', JSON.stringify({}));
+        }
+
+        let sessionUser = null;
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const pass = document.getElementById('password').value;
+
+            if (!email.endsWith('@escola.pr.gov.br')) {
+                alert('Use seu e-mail institucional @escola.pr.gov.br');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+
+            if (users[email] && users[email].pass === pass) {
+                sessionUser = { email: email, ...users[email], name: convertEmailToName(email) };
+                initSystem();
+            } else {
+                alert('E-mail ou senha incorreta.');
+            }
+        });
+
+        function convertEmailToName(email) {
+            let prefix = email.split('@')[0];
+            prefix = prefix.replace(/\d+$/, ''); 
+            let parts = prefix.split('.');
+            return parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+        }
+
+        function initSystem() {
+            document.getElementById('login-screen').classList.add('hidden');
+            
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+            sessionUser = { email: sessionUser.email, ...users[sessionUser.email], name: convertEmailToName(sessionUser.email) };
+
+            const currentRole = sessionUser.role;
+            const settingsBox = document.getElementById(`${currentRole}-settings-box`);
+            if (settingsBox) {
+                settingsBox.innerHTML = document.getElementById('settings-template').innerHTML;
+                if(sessionUser.avatar) {
+                    setTimeout(() => {
+                        const inputUrl = settingsBox.querySelector('#settings-avatar-url');
+                        if(inputUrl) inputUrl.value = sessionUser.avatar;
+                    }, 50);
+                }
+            }
+
+            if (sessionUser.role === 'admin') showAdminPanel();
+            else if (sessionUser.role === 'teacher') showTeacherPanel();
+            else if (sessionUser.role === 'student') showStudentPanel();
+        }
+
+        function toggleSection(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function toggleSettingsSection() {
+            const currentRole = sessionUser.role;
+            document.getElementById(`${currentRole}-settings-box`).classList.toggle('hidden');
+        }
+
+        function applyAvatarDOM(role, avatarUrl, initial) {
+            const imgEl = document.getElementById(`${role}-img`);
+            const txtEl = document.getElementById(`${role}-avatar-txt`);
+            if (avatarUrl) {
+                imgEl.src = avatarUrl;
+                imgEl.classList.remove('hidden');
+                txtEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                txtEl.innerText = initial;
+                txtEl.classList.remove('hidden');
+            }
+        }
+
+        function saveAvatar() {
+            const currentRole = sessionUser.role;
+            const settingsBox = document.getElementById(`${currentRole}-settings-box`);
+            const url = settingsBox.querySelector('#settings-avatar-url').value.trim();
+            
+            if(!url) return alert('Insira um link de imagem válido.');
+            
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+            users[sessionUser.email].avatar = url;
+            localStorage.setItem('edu_users', JSON.stringify(users));
+            
+            alert('Foto de perfil updated!');
+            initSystem();
+        }
+
+        function removeAvatar() {
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+            users[sessionUser.email].avatar = "";
+            localStorage.setItem('edu_users', JSON.stringify(users));
+            alert('Foto de perfil removida.');
+            initSystem();
+        }
+
+        /* --- NOTIFICAÇÕES --- */
+        function addNotification(targetEmail, text) {
+            const notifs = JSON.parse(localStorage.getItem('edu_notifications')) || [];
+            const now = new Date();
+            notifs.push({
+                to: targetEmail.trim().toLowerCase(),
+                text: text,
+                date: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+            });
+            localStorage.setItem('edu_notifications', JSON.stringify(notifs));
+        }
+
+        function renderNotifications(role) {
+            const notifs = JSON.parse(localStorage.getItem('edu_notifications')) || [];
+            const myNotifs = notifs.filter(n => n.to === sessionUser.email);
+            
+            document.getElementById(`${role}-notif-count`).innerText = myNotifs.length;
+            const list = document.getElementById(`${role}-notif-list`);
+            list.innerHTML = '';
+
+            if(myNotifs.length === 0) {
+                list.innerHTML = '<li class="list-item">Nenhuma notificação nova.</li>';
+                return;
+            }
+
+            myNotifs.reverse().forEach(n => {
+                list.innerHTML += `<li class="list-item"><div>🔔 ${n.text}</div><small>${n.date}</small></li>`;
+            });
+        }
+
+        function clearNotifs() {
+            let notifs = JSON.parse(localStorage.getItem('edu_notifications')) || [];
+            notifs = notifs.filter(n => n.to !== sessionUser.email);
+            localStorage.setItem('edu_notifications', JSON.stringify(notifs));
+            initSystem();
+        }
+
+        /* --- ADMIN --- */
+        function showAdminPanel() {
+            document.getElementById('admin-screen').classList.remove('hidden');
+            document.getElementById('admin-name').innerText = sessionUser.name;
+            document.getElementById('admin-email').innerText = sessionUser.email;
+            applyAvatarDOM('admin', sessionUser.avatar, 'J');
+            renderAdminUserList();
+            renderAdminGlobalHistory();
+            renderNotifications('admin');
+        }
+
+        function renderAdminUserList() {
+            const list = document.getElementById('admin-users-list');
+            list.innerHTML = '';
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+
+            for (let email in users) {
+                const u = users[email];
+                let badgeClass = u.role === 'admin' ? 'badge-admin' : (u.role === 'teacher' ? 'badge-prof' : 'badge-aluno');
+                let infoExtra = u.role === 'student' ? ` | <b>${u.balance} pts</b>` : '';
+                let delBtn = email === sessionUser.email ? '<small>(Você)</small>' : `<button class="btn-danger" style="padding:4px 8px; font-size:0.75rem; width:auto;" onclick="adminDeleteUser('${email}')">Excluir</button>`;
+
+                list.innerHTML += `
+                    <li class="list-item">
+                        <div>
+                            <strong>${convertEmailToName(email)}</strong> <span class="badge ${badgeClass}">${u.role.toUpperCase()}</span><br>
+                            <span style="font-size:0.75rem; color:#64748b;">${email} ${infoExtra}</span>
+                        </div>
+                        ${delBtn}
+                    </li>`;
+            }
+        }
+
+        function renderAdminGlobalHistory() {
+            const list = document.getElementById('admin-global-history');
+            list.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('edu_history'));
+
+            if (history.length === 0) {
+                list.innerHTML = '<li class="list-item">Nenhuma transação na rede.</li>';
+                return;
+            }
+
+            history.slice().reverse().forEach(item => {
+                list.innerHTML += `
+                    <li class="list-item" style="font-size:0.8rem;">
+                        <div>De: <b>${item.from}</b> → Para: <b>${convertEmailToName(item.to)}</b><br><small>${item.reason}</small></div>
+                        <div style="color:var(--success); font-weight:bold;">+${item.amount} pts</div>
+                    </li>`;
+            });
+        }
+
+        document.getElementById('admin-add-user-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newEmail = document.getElementById('adm-new-email').value.trim().toLowerCase();
+            const newPass = document.getElementById('adm-new-password').value;
+            const newRole = document.getElementById('adm-new-role').value;
+
+            if (!newEmail.endsWith('@escola.pr.gov.br')) return alert('O e-mail precisa terminar com @escola.pr.gov.br');
+
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+            if (users[newEmail]) return alert('E-mail já registrado.');
+
+            users[newEmail] = { role: newRole, pass: newPass, avatar: "" };
+            if (newRole === 'student') users[newEmail].balance = 0;
+
+            localStorage.setItem('edu_users', JSON.stringify(users));
+            alert('Conta adicionada!');
+            this.reset();
+            renderAdminUserList();
+        });
+
+        window.adminDeleteUser = function(emailTarget) {
+            if (confirm(`Remover conta de ${convertEmailToName(emailTarget)}?`)) {
+                const users = JSON.parse(localStorage.getItem('edu_users'));
+                delete users[emailTarget];
+                localStorage.setItem('edu_users', JSON.stringify(users));
+                renderAdminUserList();
+            }
+        }
+
+        /* --- PROFESSOR --- */
+        function showTeacherPanel() {
+            document.getElementById('teacher-screen').classList.remove('hidden');
+            document.getElementById('teacher-name').innerText = sessionUser.name;
+            document.getElementById('teacher-email').innerText = sessionUser.email;
+            applyAvatarDOM('teacher', sessionUser.avatar, 'P');
+            populateStudentsDropdown();
+            renderNotifications('teacher');
+        }
+
+        function populateStudentsDropdown() {
+            const select = document.getElementById('select-student');
+            select.innerHTML = '<option value="">Selecione o Aluno...</option>';
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+            for (let email in users) {
+                if (users[email].role === 'student') {
+                    select.innerHTML += `<option value="${email}">${convertEmailToName(email)} (${users[email].balance} pts)</option>`;
+                }
+            }
+        }
+
+        document.getElementById('transfer-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const targetStudent = document.getElementById('select-student').value;
+            const amount = parseInt(document.getElementById('points-amount').value);
+            const reason = document.getElementById('transfer-reason').value;
+
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+            users[targetStudent].balance += amount;
+
+            const history = JSON.parse(localStorage.getItem('edu_history'));
+            const timestamp = new Date().toLocaleDateString('pt-BR');
+
+            history.push({ to: targetStudent, from: `Prof. ${sessionUser.name}`, amount: amount, reason: reason, date: timestamp });
+            localStorage.setItem('edu_users', JSON.stringify(users));
+            localStorage.setItem('edu_history', JSON.stringify(history));
+
+            addNotification(targetStudent, `O Prof. ${sessionUser.name} creditou +${amount} pontos para você.`);
+            alert('Pontos creditados com sucesso!');
+            this.reset();
+            populateStudentsDropdown();
+        });
+
+        /* --- ESTUDANTE & PIX CORRIGIDO --- */
+        function showStudentPanel() {
+            document.getElementById('student-screen').classList.remove('hidden');
+            document.getElementById('student-name').innerText = sessionUser.name;
+            document.getElementById('student-email').innerText = sessionUser.email;
+            applyAvatarDOM('student', sessionUser.avatar, 'A');
+            renderStudentStatement();
+            renderNotifications('student');
+            renderSavedContacts();
+        }
+
+        function renderSavedContacts() {
+            const contactsDB = JSON.parse(localStorage.getItem('edu_contacts')) || {};
+            const myContacts = contactsDB[sessionUser.email] || [];
+            const container = document.getElementById('pix-saved-contacts');
+            
+            if(myContacts.length === 0) {
+                container.innerHTML = '<span class="contact-bubble" style="color:#64748b; background:#f1f5f9;">Nenhum e-mail salvo</span>';
+                return;
+            }
+
+            container.innerHTML = '';
+            myContacts.forEach(email => {
+                container.innerHTML += `<span class="contact-bubble" onclick="fillPixField('${email}')">${convertEmailToName(email)}</span>`;
+            });
+        }
+
+        function fillPixField(email) {
+            document.getElementById('pix-target-email').value = email;
+        }
+
+        function renderStudentStatement() {
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+            const history = JSON.parse(localStorage.getItem('edu_history'));
+
+            document.getElementById('student-balance').innerText = `${users[sessionUser.email].balance} pts`;
+
+            const list = document.getElementById('student-history-list');
+            list.innerHTML = '';
+
+            const myHistory = history.filter(item => item.to === sessionUser.email || item.fromEmail === sessionUser.email);
+
+            if (myHistory.length === 0) {
+                list.innerHTML = '<li class="list-item">Nenhuma transação recente.</li>';
+                return;
+            }
+
+            myHistory.reverse().forEach(item => {
+                let isReceived = item.to === sessionUser.email;
+                let color = isReceived ? 'var(--success)' : 'var(--danger)';
+                let signal = isReceived ? '+' : '-';
+                let label = isReceived ? `De: ${item.from}` : `Para: ${convertEmailToName(item.to)}`;
+
+                list.innerHTML += `
+                    <li class="list-item">
+                        <div><strong style="color:${color}">${signal}${item.amount} pts</strong> | ${label}<br><small>${item.reason}</small></div>
+                    </li>`;
+            });
+        }
+
+        document.getElementById('student-pix-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // CORREÇÃO: Limpa espaços em branco e força letras minúsculas na busca da Chave Pix
+            const targetEmail = document.getElementById('pix-target-email').value.trim().toLowerCase();
+            const amount = parseInt(document.getElementById('pix-amount').value);
+            const reason = document.getElementById('pix-reason').value.trim() || "Transferência via Pix";
+
+            if (targetEmail === sessionUser.email.toLowerCase()) {
+                return alert('Você não pode enviar um Pix para si mesmo.');
+            }
+
+            const users = JSON.parse(localStorage.getItem('edu_users'));
+
+            // CORREÇÃO: Validação dinâmica buscando a chave padronizada em minúsculo
+            if (!users[targetEmail] || users[targetEmail].role !== 'student') {
+                return alert('Chave Pix Inválida. Aluno não encontrado no sistema com este e-mail.');
+            }
+
+            if (users[sessionUser.email].balance < amount) {
+                return alert('Saldo Insuficiente.');
+            }
+
+            // Realiza a transferência
+            users[sessionUser.email].balance -= amount;
+            users[targetEmail].balance += amount;
+
+            const history = JSON.parse(localStorage.getItem('edu_history'));
+            history.push({
+                to: targetEmail,
+                from: sessionUser.name,
+                fromEmail: sessionUser.email,
+                amount: amount,
+                reason: `⚡ Pix: ${reason}`,
+                date: new Date().toLocaleDateString('pt-BR')
+            });
+
+            // Adiciona o contato na lista de contatos recentes salvos do usuário
+            const contactsDB = JSON.parse(localStorage.getItem('edu_contacts')) || {};
+            if (!contactsDB[sessionUser.email]) contactsDB[sessionUser.email] = [];
+            if (!contactsDB[sessionUser.email].includes(targetEmail)) {
+                contactsDB[sessionUser.email].push(targetEmail);
+            }
+
+            localStorage.setItem('edu_users', JSON.stringify(users));
+            localStorage.setItem('edu_history', JSON.stringify(history));
+            localStorage.setItem('edu_contacts', JSON.stringify(contactsDB));
+
+            addNotification(targetEmail, `${sessionUser.name} te enviou um Pix de ⚡ ${amount} pts.`);
+            
+            alert(`Pix de ${amount} pts enviado com sucesso!`);
+            this.reset();
+            
+            // Atualiza os dados de tela imediatamente
+            showStudentPanel();
+        });
+
+        function logout() {
+            sessionUser = null;
+            document.getElementById('admin-screen').classList.add('hidden');
+            document.getElementById('teacher-screen').classList.add('hidden');
+            document.getElementById('student-screen').classList.add('hidden');
+            
+            document.getElementById('admin-settings-box').classList.add('hidden');
+            document.getElementById('teacher-settings-box').classList.add('hidden');
+            document.getElementById('student-settings-box').classList.add('hidden');
+
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('login-form').reset();
+        }
+    </script>
+</body>
+</html>
